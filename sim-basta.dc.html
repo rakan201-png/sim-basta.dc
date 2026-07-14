@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F2E8; --card:#FFFFFF; --card2:#FBF7EE; --ink:#182620; --muted:#6B7A70;
+    --line:#E7DFCD; --green900:#0E3B2A; --emerald:#12885B; --green:#178A5A;
+    --gold:#B0862F; --amber:#D98A2B; --orange:#E9852F; --red:#C7513A;
+    --font-body:'IBM Plex Sans Arabic',sans-serif; --font-display:'Amiri',serif;
+  }
+  html,body{margin:0;padding:0;background:var(--paper);}
+  *{box-sizing:border-box;}
+  a{color:var(--emerald);text-decoration:none;} a:hover{color:var(--gold);}
+  @keyframes baIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:none;}}
+  @keyframes baPulse{0%,100%{box-shadow:0 0 0 0 rgba(233,133,47,.5);}50%{box-shadow:0 0 0 5px rgba(233,133,47,0);}}
+  ::-webkit-scrollbar{width:9px;height:9px;}::-webkit-scrollbar-thumb{background:#DAD0BC;border-radius:9px;}
+</style>
+</helmet>
+<div dir="rtl" style="min-height:100vh;background:var(--paper);font-family:var(--font-body);color:var(--ink);display:flex;flex-direction:column;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 26px;border-bottom:1px solid var(--line);background:var(--green900);color:#F3EEE2;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <img src="kahatin-logo.png" alt="كهاتين" style="height:32px;width:auto;filter:brightness(0) invert(1);opacity:.92;"/>
+      <div style="width:1px;height:28px;background:rgba(255,255,255,.18);"></div>
+      <div>
+        <div style="font-weight:700;font-size:15px;">بسطة — منصّة تشغيل حاضنة الباعة الذكية</div>
+        <div style="font-size:11.5px;color:#A9C3B4;">تحويل الباعة الجائلين إلى اقتصاد مرخّص · وحدة الاستثمار المجتمعي</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:#E4CE97;border:1px solid rgba(216,184,113,.35);padding:6px 12px;border-radius:999px;">لوحة تشغيل حيّة · الطبقة التقنية</span>
+      <a href="Kahatin-Dossier.dc.html" style="font-size:12.5px;color:#A9C3B4;">الحقيبة ←</a>
+    </div>
+  </header>
+
+  <!-- KPI STRIP -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:18px 26px 4px;">
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;">
+      <div style="font-size:11px;color:var(--muted);">أكشاك مُشغّلة</div>
+      <div style="font-size:26px;font-weight:700;color:var(--green900);">{{ activeCount }}<span style="font-size:13px;color:var(--muted);">/{{ totalSlots }}</span></div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;">
+      <div style="font-size:11px;color:var(--muted);">إشغال المواقع</div>
+      <div style="font-size:26px;font-weight:700;color:var(--green900);">{{ occupancy }}<span style="font-size:14px;">٪</span></div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--emerald),#0E6E48);border:1px solid var(--emerald);border-radius:14px;padding:13px 16px;color:#fff;">
+      <div style="font-size:11px;color:#CFEBDD;">رسوم اليوم (تحصيل رقمي)</div>
+      <div style="font-size:26px;font-weight:700;">{{ fees }}<span style="font-size:13px;"> ر.س</span></div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;">
+      <div style="font-size:11px;color:var(--muted);">امتثال سلامة الغذاء</div>
+      <div style="font-size:26px;font-weight:700;color:{{ safetyColor }};">{{ safety }}<span style="font-size:14px;">٪</span></div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;">
+      <div style="font-size:11px;color:var(--muted);">أكشاك مسار الأيتام</div>
+      <div style="font-size:26px;font-weight:700;color:var(--gold);">{{ orphanCount }}</div>
+    </div>
+  </div>
+
+  <main style="flex:1;display:grid;grid-template-columns:1fr 360px;gap:18px;padding:12px 26px 20px;min-height:0;">
+
+    <!-- ZONE MAP -->
+    <section style="display:flex;flex-direction:column;min-height:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:700;">حاضنة محيط جبل الرحمة — عرفات <span style="color:var(--muted);font-weight:400;font-size:12px;">· موقع تجريبي</span></div>
+        <div style="display:flex;gap:9px;">
+          <button onclick="{{ autoAssign }}" style="font-family:var(--font-body);font-weight:600;font-size:12.5px;padding:9px 14px;border-radius:10px;border:0;cursor:pointer;background:var(--green900);color:#fff;">توزيع دوام آلي عادل</button>
+          <button onclick="{{ toggleDay }}" style="font-family:var(--font-body);font-weight:600;font-size:12.5px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);cursor:pointer;background:{{ dayBg }};color:{{ dayFg }};">{{ dayLabel }}</button>
+        </div>
+      </div>
+
+      <div style="flex:1;background:var(--card2);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;min-height:420px;">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;font-size:10.5px;color:var(--muted);">
+          <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--emerald);"></span> مرخّص نشط</span>
+          <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></span> مسار الأيتام</span>
+          <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--orange);"></span> تنبيه سلامة</span>
+          <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--red);"></span> ترخيص منتهٍ</span>
+          <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;border:1.5px dashed #C3B79A;"></span> موقع متاح</span>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:11px;">
+          <sc-for list="{{ slots }}" as="s" hint-placeholder-count="12">
+            <div onclick="{{ s.select }}" style="cursor:pointer;background:{{ s.bg }};border:1.5px {{ s.borderStyle }} {{ s.border }};border-radius:13px;padding:11px 12px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .1s;{{ s.pulse }}">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                <div>
+                  <div style="font-size:12.5px;font-weight:700;color:{{ s.titleColor }};">{{ s.typeLabel }}</div>
+                  <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">{{ s.vendorLabel }}</div>
+                </div>
+                <div style="opacity:{{ s.qrOpacity }};">
+                  <svg width="20" height="20" viewBox="0 0 7 7" style="display:block;">
+                    <rect x="0" y="0" width="3" height="3" fill="none" stroke="{{ s.titleColor }}" stroke-width="0.7"/><rect x="1" y="1" width="1" height="1" fill="{{ s.titleColor }}"/>
+                    <rect x="4" y="0" width="3" height="3" fill="none" stroke="{{ s.titleColor }}" stroke-width="0.7"/><rect x="5" y="1" width="1" height="1" fill="{{ s.titleColor }}"/>
+                    <rect x="0" y="4" width="3" height="3" fill="none" stroke="{{ s.titleColor }}" stroke-width="0.7"/><rect x="1" y="5" width="1" height="1" fill="{{ s.titleColor }}"/>
+                    <rect x="4" y="4" width="1" height="1" fill="{{ s.titleColor }}"/><rect x="6" y="4" width="1" height="1" fill="{{ s.titleColor }}"/><rect x="5" y="5" width="1" height="1" fill="{{ s.titleColor }}"/><rect x="4" y="6" width="1" height="1" fill="{{ s.titleColor }}"/><rect x="6" y="6" width="1" height="1" fill="{{ s.titleColor }}"/>
+                  </svg>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                <span style="font-size:9.5px;font-weight:600;color:{{ s.pillColor }};background:{{ s.pillBg }};border-radius:20px;padding:2px 8px;">{{ s.statusLabel }}</span>
+                <span style="font-size:10px;color:{{ s.tempColor }};font-weight:600;">{{ s.tempText }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: DETAIL + BOOKING + SAFETY + LOG -->
+    <section style="display:flex;flex-direction:column;gap:13px;min-height:0;overflow:auto;">
+
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">فحص الترخيص — بطاقة QR</div>
+        <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:13px;">
+            <div style="width:66px;height:66px;border-radius:12px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none;">
+              <svg width="46" height="46" viewBox="0 0 7 7">
+                <rect x="0" y="0" width="3" height="3" fill="none" stroke="var(--green900)" stroke-width="0.7"/><rect x="1" y="1" width="1" height="1" fill="var(--green900)"/>
+                <rect x="4" y="0" width="3" height="3" fill="none" stroke="var(--green900)" stroke-width="0.7"/><rect x="5" y="1" width="1" height="1" fill="var(--green900)"/>
+                <rect x="0" y="4" width="3" height="3" fill="none" stroke="var(--green900)" stroke-width="0.7"/><rect x="1" y="5" width="1" height="1" fill="var(--green900)"/>
+                <rect x="4" y="4" width="1" height="1" fill="var(--green900)"/><rect x="6" y="4" width="1" height="1" fill="var(--green900)"/><rect x="5" y="5" width="1" height="1" fill="var(--green900)"/><rect x="4" y="6" width="1" height="1" fill="var(--green900)"/><rect x="6" y="6" width="1" height="1" fill="var(--green900)"/><rect x="3" y="3" width="1" height="1" fill="var(--green900)"/>
+              </svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:700;">{{ sel.vendorLabel }}</div>
+              <div style="font-size:11px;color:var(--muted);">{{ sel.typeLabel }} · موقع #{{ sel.id }}</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;margin-top:7px;font-size:11px;font-weight:600;color:{{ sel.pillColor }};background:{{ sel.pillBg }};border-radius:20px;padding:3px 10px;">{{ sel.statusLabel }}</div>
+              <div style="display:flex;gap:16px;margin-top:9px;font-size:11px;">
+                <div><span style="color:var(--muted);">رسوم اليوم:</span> <b>{{ sel.feesText }}</b></div>
+                <div><span style="color:var(--muted);">الحرارة:</span> <b style="color:{{ sel.tempColor }};">{{ sel.tempText2 }}</b></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button onclick="{{ sel.action }}" disabled="{{ sel.actionDisabled }}" style="flex:1;font-family:var(--font-body);font-weight:600;font-size:11.5px;padding:8px;border-radius:9px;border:0;cursor:{{ sel.actionCursor }};background:{{ sel.actionBg }};color:{{ sel.actionFg }};">{{ sel.actionLabel }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noSel }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:11.5px;color:var(--muted);text-align:center;padding:14px 8px;line-height:1.7;">انقر على أي كشك لعرض بطاقة ترخيصه فوراً<br/>— كما يراها المفتّش الميداني.</div>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px;">
+          <div style="font-size:13px;font-weight:700;">حجز الدوام — بائعون مرخّصون بالانتظار</div>
+          <span style="font-size:11px;color:var(--muted);">{{ queueCount }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11.5px;color:var(--muted);text-align:center;padding:8px;">لا بائعين في قائمة الانتظار.</div>
+          </sc-if>
+          <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:7px 11px;">
+              <span style="font-size:11.5px;font-weight:700;color:{{ q.color }};flex:none;">{{ q.code }}</span>
+              <span style="font-size:11px;color:#4A5A50;flex:1;">{{ q.typeLabel }}</span>
+              <span style="font-size:10px;color:var(--muted);flex:none;">انتظار {{ q.wait }} ي</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:11px;">حسّاسات سلامة الغذاء <span style="font-size:10px;color:var(--muted);font-weight:400;">· النطاق الآمن ≤ ٥°م</span></div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <sc-for list="{{ foodKiosks }}" as="fk" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:11px;font-weight:600;flex:none;width:52px;">{{ fk.code }}</span>
+              <div style="flex:1;height:7px;background:#EFEADE;border-radius:7px;overflow:hidden;"><div style="height:100%;width:{{ fk.barW }};background:{{ fk.color }};border-radius:7px;"></div></div>
+              <span style="font-size:11px;font-weight:700;color:{{ fk.color }};flex:none;width:44px;text-align:left;">{{ fk.temp }}°م</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;flex:1;min-height:130px;display:flex;flex-direction:column;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:9px;">سجلّ العمليات</div>
+        <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px;">
+          <sc-for list="{{ log }}" as="e" hint-placeholder-count="3">
+            <div style="display:flex;gap:8px;align-items:flex-start;background:var(--card2);border-right:2px solid {{ e.color }};border-radius:7px;padding:6px 10px;animation:baIn .25s ease;">
+              <span style="font-size:9.5px;color:var(--muted);flex:none;padding-top:1px;">{{ e.clock }}</span>
+              <span style="font-size:11px;line-height:1.5;color:#3E4C44;">{{ e.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="padding:9px 26px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;background:var(--card2);">
+    <span>محاكاة توضيحية · إطار «الحاضنات البلدية» نظام قائم لدى الأمانة</span>
+    <span>التنفيذ التقني: راكان الحربي · الجانب الميداني والعلاقات: عزام العقيل</span>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  TYPES = {
+    'مأكولات ساخنة': { fee:11, per:true },
+    'عصائر ومرطبات': { fee:9,  per:true },
+    'تمور':          { fee:7,  per:false },
+    'مياه':          { fee:6,  per:false },
+    'هدايا وتذكارات':{ fee:6,  per:false },
+    'مصاحف وسجّاد':  { fee:5,  per:false },
+  };
+
+  state = {
+    t: 0, day: false, selectedId: null,
+    slots: [
+      { id:1,  type:'مأكولات ساخنة', st:'active', vendor:'ب-١٠٤', temp:3,  fees:34 },
+      { id:2,  type:'تمور',          st:'orphan', vendor:'أيتام-٠٢', temp:null, fees:21 },
+      { id:3,  type:'هدايا وتذكارات',st:'active', vendor:'ب-١٠٩', temp:null, fees:18 },
+      { id:4,  type:'عصائر ومرطبات', st:'active', vendor:'ب-١١٢', temp:4,  fees:27 },
+      { id:5,  type:null,            st:'empty',  vendor:null,   temp:null, fees:0 },
+      { id:6,  type:'مأكولات ساخنة', st:'active', vendor:'ب-١١٥', temp:2,  fees:31 },
+      { id:7,  type:'مياه',          st:'active', vendor:'ب-١١٦', temp:null, fees:15 },
+      { id:8,  type:'هدايا وتذكارات',st:'expired',vendor:'ب-١١٧', temp:null, fees:0 },
+      { id:9,  type:'تمور',          st:'active', vendor:'ب-١٢١', temp:null, fees:19 },
+      { id:10, type:'مأكولات ساخنة', st:'orphan', vendor:'أيتام-٠٥', temp:3, fees:29 },
+      { id:11, type:null,            st:'empty',  vendor:null,   temp:null, fees:0 },
+      { id:12, type:'مصاحف وسجّاد',  st:'active', vendor:'ب-١٢٤', temp:null, fees:14 },
+    ],
+    queue: [
+      { code:'أيتام-٠٩', type:'تمور',          wait:9 },
+      { code:'ب-١٣٠',    type:'عصائر ومرطبات', wait:6 },
+      { code:'ب-١٣٤',    type:'هدايا وتذكارات',wait:4 },
+      { code:'ب-١٤١',    type:'مأكولات ساخنة', wait:2 },
+    ],
+    log: [
+      { clock:'06:40', color:'#178A5A', text:'بدء وردية الحاضنة — تفعيل ١٠ أكشاك مرخّصة' },
+    ],
+  };
+
+  componentWillUnmount(){ clearInterval(this._timer); }
+
+  clock(){
+    const m = 6*60 + 40 + this.state.t*20;
+    const hh = Math.floor(m/60)%24, mm = m%60;
+    return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  }
+  pushLog(color, text, arr){
+    const a = arr || this.state.log.slice();
+    a.unshift({ clock:this.clock(), color, text });
+    return a.slice(0,18);
+  }
+
+  select = (id) => this.setState({ selectedId: id });
+
+  assignTo(slotId, list){
+    // pick longest-wait vendor from queue
+    const q = (list || this.state.queue).slice().sort((a,b)=>b.wait-a.wait);
+    if (!q.length) return null;
+    const v = q.shift();
+    const per = this.TYPES[v.type] && this.TYPES[v.type].per;
+    const st = v.code.startsWith('أيتام') ? 'orphan' : 'active';
+    return { slot:{ type:v.type, st, vendor:v.code, temp: per ? 3 : null, fees:0 }, rest:q, vendor:v };
+  }
+
+  autoAssign = () => {
+    let slots = this.state.slots.slice();
+    let queue = this.state.queue.slice();
+    let log = this.state.log.slice();
+    let n = 0;
+    for (let i=0;i<slots.length;i++){
+      if (slots[i].st !== 'empty') continue;
+      const r = this.assignTo(slots[i].id, queue);
+      if (!r) break;
+      slots[i] = { ...slots[i], ...r.slot };
+      queue = r.rest;
+      n++;
+      log = this.pushLog('#178A5A', 'حجز آلي عادل: '+r.vendor.code+' → موقع #'+slots[i].id+' ('+r.vendor.type+')', log);
+    }
+    if (n===0) log = this.pushLog('#D98A2B','لا مواقع متاحة للتوزيع حالياً', log);
+    this.setState({ slots, queue, log });
+  };
+
+  slotAction = (id) => {
+    const s = this.state.slots.find(x=>x.id===id);
+    if (!s) return;
+    let slots = this.state.slots.slice();
+    let queue = this.state.queue.slice();
+    let log = this.state.log.slice();
+    const i = slots.findIndex(x=>x.id===id);
+    if (s.st === 'empty'){
+      const r = this.assignTo(id, queue);
+      if (!r){ log = this.pushLog('#D98A2B','لا بائع في الانتظار', log); this.setState({log}); return; }
+      slots[i] = { ...s, ...r.slot }; queue = r.rest;
+      log = this.pushLog('#178A5A','تخصيص '+r.vendor.code+' لموقع #'+id, log);
+    } else if (s.st === 'expired'){
+      slots[i] = { ...s, st:'active' };
+      log = this.pushLog('#178A5A','تجديد ترخيص '+s.vendor+' — موقع #'+id, log);
+    } else if (s.temp!=null && s.temp>5){
+      slots[i] = { ...s, temp:3 };
+      log = this.pushLog('#178A5A','معالجة تبريد '+s.vendor+' — عاد للنطاق الآمن', log);
+    }
+    this.setState({ slots, queue, log });
+  };
+
+  toggleDay = () => {
+    if (this.state.day){ clearInterval(this._timer); this.setState({ day:false }); return; }
+    this.setState({ day:true });
+    this._timer = setInterval(()=>this.dayTick(), 1100);
+  };
+
+  dayTick(){
+    let slots = this.state.slots.slice();
+    let log = this.state.log.slice();
+    const t = this.state.t + 1;
+    let alerted = null;
+    slots = slots.map(s => {
+      if (s.st === 'empty' || s.st === 'expired') return s;
+      let fees = s.fees + (this.TYPES[s.type] ? this.TYPES[s.type].fee : 6);
+      let temp = s.temp;
+      if (temp != null){
+        temp = Math.max(1, Math.round((temp + (Math.random()*2.4 - 0.9))*10)/10);
+        if (temp > 5 && (s.temp==null || s.temp<=5)) alerted = s;
+      }
+      return { ...s, fees, temp };
+    });
+    if (alerted) log = this.pushLog('#E9852F','تنبيه سلامة غذائية — تجاوز حرارة العرض في '+alerted.vendor+'؛ أُشعِر المفتّش', log);
+    if (t > 30){ clearInterval(this._timer); this.setState({ day:false }); }
+    this.setState({ slots, log, t });
+  }
+
+  meta(s){
+    const M = {
+      active:  { label:'مرخّص · نشط',       pill:'#0E7A4E', pillBg:'#E7F4EC', border:'#CBE6D5', title:'#0E3B2A' },
+      orphan:  { label:'مسار الأيتام',       pill:'#8A6412', pillBg:'#F6EEDA', border:'#E7D6A8', title:'#0E3B2A' },
+      empty:   { label:'موقع متاح',          pill:'#8A9488', pillBg:'#F0EFE8', border:'#C3B79A', title:'#8A9488' },
+      expired: { label:'ترخيص منتهٍ',        pill:'#B23A28', pillBg:'#FaeAe6', border:'#EBCcC4', title:'#B23A28' },
+    };
+    let m = M[s.st] || M.active;
+    if (s.temp != null && s.temp > 5) m = { ...m, label:'تنبيه حرارة', pill:'#C25A1E', pillBg:'#FCEEDD', border:'#F0C9A0', title:'#C25A1E' };
+    return m;
+  }
+
+  renderVals(){
+    const { slots, queue, log, selectedId, day, t } = this.state;
+    const occupied = slots.filter(s=>s.st!=='empty');
+    const active = slots.filter(s=>s.st==='active'||s.st==='orphan');
+    const orphanCount = slots.filter(s=>s.st==='orphan').length;
+    const fees = slots.reduce((a,s)=>a+s.fees,0);
+    const foods = slots.filter(s=>s.temp!=null);
+    const safeFoods = foods.filter(s=>s.temp<=5).length;
+    const safety = foods.length ? Math.round(safeFoods/foods.length*100) : 100;
+
+    const slotViews = slots.map(s => {
+      const m = this.meta(s);
+      const breach = s.temp!=null && s.temp>5;
+      const isEmpty = s.st==='empty';
+      const bg = isEmpty ? 'transparent'
+        : s.st==='orphan' ? 'linear-gradient(160deg,#FBF4E2,#fff)'
+        : s.st==='expired' ? '#FDF3F1'
+        : breach ? '#FEF6EE' : '#fff';
+      return {
+        id:s.id,
+        typeLabel: s.type || 'موقع متاح',
+        vendorLabel: s.vendor || 'اضغط للتخصيص',
+        statusLabel: m.label, pillColor:m.pill, pillBg:m.pillBg,
+        border: breach ? '#E9852F' : (s.id===selectedId ? '#12885B' : m.border),
+        borderStyle: isEmpty ? 'dashed' : 'solid',
+        bg, titleColor:m.title,
+        qrOpacity: isEmpty ? 0.15 : 0.5,
+        tempText: s.temp!=null ? (s.temp+'°م') : '',
+        tempColor: breach ? '#E9852F' : 'var(--muted)',
+        pulse: breach ? 'animation:baPulse 1.6s infinite;' : '',
+        select: () => this.select(s.id),
+      };
+    });
+
+    let sel = null;
+    const s = slots.find(x=>x.id===selectedId);
+    if (s){
+      const m = this.meta(s);
+      const breach = s.temp!=null && s.temp>5;
+      let actionLabel='مرخّص — لا إجراء', actionBg='#F0EFE8', actionFg='#8A9488', disabled=true, cursor='default';
+      if (s.st==='empty'){ actionLabel='تخصيص البائع التالي (الأطول انتظاراً)'; actionBg='#0E3B2A'; actionFg='#fff'; disabled=false; cursor='pointer'; }
+      else if (s.st==='expired'){ actionLabel='تجديد الترخيص'; actionBg='#12885B'; actionFg='#fff'; disabled=false; cursor='pointer'; }
+      else if (breach){ actionLabel='معالجة التبريد — استعادة النطاق الآمن'; actionBg='#E9852F'; actionFg='#fff'; disabled=false; cursor='pointer'; }
+      sel = {
+        id:s.id, typeLabel:s.type||'موقع متاح', vendorLabel:s.vendor||'موقع متاح',
+        statusLabel:m.label, pillColor:m.pill, pillBg:m.pillBg,
+        feesText: s.fees+' ر.س',
+        tempColor: breach ? '#E9852F':'var(--muted)',
+        tempText2: s.temp!=null ? s.temp+'°م' : 'لا ينطبق',
+        action: () => this.slotAction(s.id),
+        actionLabel, actionBg, actionFg, actionDisabled:disabled, actionCursor:cursor,
+      };
+    }
+
+    const foodKiosks = foods.map(s => ({
+      code:s.vendor, temp:s.temp,
+      barW: Math.min(100, Math.round(s.temp/10*100))+'%',
+      color: s.temp>5 ? '#E9852F' : '#178A5A',
+    }));
+
+    return {
+      totalSlots: slots.length, activeCount: active.length,
+      occupancy: Math.round(occupied.length/slots.length*100),
+      fees, orphanCount,
+      safety, safetyColor: safety>=90 ? '#178A5A' : '#D98A2B',
+      slots: slotViews,
+      queue: queue.map(q=>({ code:q.code, typeLabel:q.type, wait:q.wait, color: q.code.startsWith('أيتام')?'#8A6412':'#0E7A4E' })),
+      queueCount: queue.length, queueEmpty: queue.length===0,
+      foodKiosks,
+      log,
+      hasSel: !!sel, noSel: !sel, sel: sel || {},
+      autoAssign:this.autoAssign, toggleDay:this.toggleDay,
+      dayLabel: day ? '⏸ إيقاف اليوم' : '▶ محاكاة يوم',
+      dayBg: day ? '#FBEEDD':'#fff', dayFg: day ? '#C0863A':'#4A5A50',
+    };
+  }
+}
+</script>
+<template id="__bundler_thumbnail"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E3B2A"/><circle cx="50" cy="50" r="22" fill="none" stroke="#C4A05A" stroke-width="2.5"/><circle cx="50" cy="50" r="30" fill="none" stroke="#12885B" stroke-width="2.5"/><text x="50" y="60" font-size="26" fill="#E6D6A9" text-anchor="middle" font-family="serif">ب</text></svg></template></body>
+</html>
